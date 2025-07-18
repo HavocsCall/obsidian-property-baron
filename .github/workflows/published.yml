@@ -1,0 +1,58 @@
+name: Create Plugin Files For GitHub Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    #Set Local Variables
+    env:
+      ZIP_NAME: Property-Baron
+
+    permissions:
+      contents: write
+
+    steps:
+      #Check out repo
+      - name: Check Out Repository
+        uses: actions/checkout@v4
+
+      # Get the version number
+      - name: Extract tag version number
+        id: get_version
+        run: echo "version-without-v=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      # Substitute the variables in the `manifest.json`.
+      - name: Substitute manifest and download links for versioned ones
+        id: sub_manifest_link_version
+        uses: devops-actions/variable-substitution@v1.2
+        with:
+          files: manifest.json,package.json,package-lock.json
+        env:
+          url: https://github.com/${{github.repository}}
+          version: ${{steps.get_version.outputs.version-without-v}}
+
+      # Build main.js
+      - name: Build plugin
+        run: |
+          npm install
+          npm run build
+          
+      # Create the zip file
+      - name: Create Zip
+        run: zip -r ./${ZIP_NAME}.zip main.js manifest.json styles.css
+
+      # Add the zip file to the to the release
+      - name: Update release with files
+        id: create_version_release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{secrets.GITHUB_TOKEN}}
+          allowUpdates: true
+          omitDraftDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          name: ${{steps.get_version.outputs.version-without-v}}
+          artifacts: './${{env.ZIP_NAME}}.zip'
