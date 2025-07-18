@@ -30,7 +30,7 @@ jobs:
         id: sub_manifest_link_version
         uses: devops-actions/variable-substitution@v1.2
         with:
-          files: manifest.json,package.json,package-lock.json
+          files: manifest.json
         env:
           url: https://github.com/${{github.repository}}
           version: ${{steps.get_version.outputs.version-without-v}}

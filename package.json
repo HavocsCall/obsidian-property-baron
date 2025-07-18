@@ -1,6 +1,6 @@
 {
 	"name": "property-baron",
-	"version": "#{VERSION}#",
+	"version": "1.0.0",
 	"description": "A plugin for various property related tasks",
 	"main": "main.js",
 	"scripts": {
